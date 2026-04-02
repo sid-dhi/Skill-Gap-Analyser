@@ -1,0 +1,143 @@
+import { Link } from 'react-router-dom';
+import { ArrowRight, Target, TrendingUp, BookOpen, AlertTriangle } from 'lucide-react';
+import SkillRadarChart from '../components/SkillRadarChart';
+import SkillBarChart from '../components/SkillBarChart';
+import { overallScore, computeGaps, courseProgressStats } from '../utils/gapUtils';
+import { PROFESSIONS } from '../data/professions';
+
+export default function Dashboard({ assessment, courseProgress }) {
+  const profession = PROFESSIONS.find(p => p.id === assessment?.profession_id);
+  const skills     = assessment?.skills || [];
+  const score      = overallScore(skills);
+  const gaps       = computeGaps(skills);
+  const bigGaps    = gaps.filter(g => g.gap >= 3).sort((a, b) => b.gap - a.gap);
+  const stats      = courseProgressStats(courseProgress);
+
+  if (!assessment?.profession_id) {
+    return (
+      <div className="page">
+        <div className="page-header">
+          <h2>Welcome 👋</h2>
+          <p>Start by completing your skill assessment to see your personalised gap analysis.</p>
+        </div>
+        <div className="card" style={{ textAlign: 'center', padding: '60px 40px' }}>
+          <div style={{ fontSize: 64, marginBottom: 16 }}>🎯</div>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 22, marginBottom: 8 }}>
+            No Assessment Yet
+          </h3>
+          <p style={{ color: 'var(--text2)', marginBottom: 24 }}>
+            Select your target profession and rate your current skills to unlock your personal dashboard.
+          </p>
+          <Link to="/assessment" className="btn btn-primary">
+            Start Assessment <ArrowRight size={16} />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page">
+      <div className="page-header">
+        <h2>{profession?.icon} {profession?.title}</h2>
+        <p>Your personalised skill gap analysis — keep building! 🚀</p>
+      </div>
+
+      {/* Stat Cards */}
+      <div className="grid-4" style={{ marginBottom: 28 }}>
+        <div className="stat-card accent">
+          <div className="stat-label">Overall Score</div>
+          <div className="stat-value accent">{score}%</div>
+          <div className="stat-hint">vs. target requirements</div>
+        </div>
+        <div className="stat-card green">
+          <div className="stat-label">Courses Done</div>
+          <div className="stat-value green">{stats.completed}</div>
+          <div className="stat-hint">of {stats.total} enrolled</div>
+        </div>
+        <div className="stat-card yellow">
+          <div className="stat-label">In Progress</div>
+          <div className="stat-value yellow">{stats.inProgress}</div>
+          <div className="stat-hint">courses active</div>
+        </div>
+        <div className="stat-card red">
+          <div className="stat-label">Skill Gaps</div>
+          <div className="stat-value red">{bigGaps.length}</div>
+          <div className="stat-hint">need attention</div>
+        </div>
+      </div>
+
+      {/* Charts */}
+      <div className="grid-2" style={{ marginBottom: 28 }}>
+        <div className="card">
+          <div className="card-title">Skill Radar</div>
+          <div className="card-sub">Current vs. required skill levels</div>
+          <SkillRadarChart skills={skills} />
+        </div>
+
+        <div className="card">
+          <div className="card-title">Skill Breakdown</div>
+          <div className="card-sub">
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--border2)', display: 'inline-block' }} />
+              Target
+              <span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--accent)', display: 'inline-block', marginLeft: 8 }} />
+              Current
+            </span>
+          </div>
+          <SkillBarChart skills={skills} />
+        </div>
+      </div>
+
+      {/* Priority Areas */}
+      {bigGaps.length > 0 && (
+        <div className="card">
+          <div className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AlertTriangle size={18} color="var(--yellow)" /> Priority Areas to Improve
+          </div>
+          <div className="card-sub">These skills have the largest gap — focus here first</div>
+          <div style={{ display: 'grid', gap: 12 }}>
+            {bigGaps.slice(0, 4).map(g => (
+              <div
+                key={g.skill_name}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 16px',
+                  background: 'var(--bg3)',
+                  borderRadius: 10,
+                  gap: 16,
+                }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 500 }}>{g.skill_name}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 13, color: 'var(--text2)' }}>
+                    {g.current_level} → {g.target_level}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      padding: '3px 10px',
+                      borderRadius: 99,
+                      background: 'rgba(248,113,113,0.15)',
+                      color: 'var(--red)',
+                    }}
+                  >
+                    Gap: {g.gap}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 16 }}>
+            <Link to="/courses" className="btn btn-primary" style={{ fontSize: 13 }}>
+              <BookOpen size={15} /> View Recommended Courses
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
