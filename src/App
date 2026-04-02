@@ -1,0 +1,71 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Sidebar from './components/Navbar';
+import Dashboard from './pages/Dashboard';
+import Assessment from './pages/Assessment';
+import Courses from './pages/Courses';
+import Progress from './pages/Progress';
+import { useLocalStorage } from './hooks/useLocalStorage';
+
+export default function App() {
+  const [assessment, setAssessment]       = useLocalStorage('sga_assessment', null);
+  const [courseProgress, setCourseProgress] = useLocalStorage('sga_courses', {});
+
+  function handleSaveAssessment(data) {
+    setAssessment(data);
+  }
+
+  function handleUpdateProgress(courseId, update) {
+    setCourseProgress(prev => ({ ...prev, [courseId]: update }));
+  }
+
+  const professionTitle = assessment?.profession_title || null;
+
+  return (
+    <BrowserRouter>
+      <div className="app-shell">
+        <Sidebar professionTitle={professionTitle} />
+        <main className="main-content">
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Dashboard
+                  assessment={assessment}
+                  courseProgress={courseProgress}
+                />
+              }
+            />
+            <Route
+              path="/assessment"
+              element={
+                <Assessment
+                  assessment={assessment}
+                  onSave={handleSaveAssessment}
+                />
+              }
+            />
+            <Route
+              path="/courses"
+              element={
+                <Courses
+                  assessment={assessment}
+                  courseProgress={courseProgress}
+                  onUpdateProgress={handleUpdateProgress}
+                />
+              }
+            />
+            <Route
+              path="/progress"
+              element={
+                <Progress
+                  assessment={assessment}
+                  courseProgress={courseProgress}
+                />
+              }
+            />
+          </Routes>
+        </main>
+      </div>
+    </BrowserRouter>
+  );
+}
