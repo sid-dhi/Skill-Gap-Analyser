@@ -1,0 +1,52 @@
+import { gapColor, gapLevel, skillFillColor } from '../utils/gapUtils';
+
+export default function SkillBarChart({ skills }) {
+  if (!skills?.length) return null;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {skills.map((s) => {
+        const gap      = Math.max(0, (s.target_level || 0) - (s.current_level || 0));
+        const gl       = gapLevel(gap);
+        const fillColor = skillFillColor(s.current_level || 0, s.target_level || 1);
+        const currentPct = ((s.current_level || 0) / 10) * 100;
+        const targetPct  = ((s.target_level  || 0) / 10) * 100;
+
+        return (
+          <div key={s.skill_name} className="skill-row">
+            <div className="skill-row-header">
+              <span className="skill-name">{s.skill_name}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className="skill-levels">
+                  {s.current_level || 0} / {s.target_level}
+                </span>
+                {gap > 0 ? (
+                  <span className={`skill-gap-label gap-${gl}`}>
+                    -{gap} gap
+                  </span>
+                ) : (
+                  <span className="skill-gap-label gap-none">✓ met</span>
+                )}
+              </div>
+            </div>
+
+            <div className="skill-track">
+              <div
+                className="skill-fill-target"
+                style={{ width: `${targetPct}%` }}
+              />
+              <div
+                className="skill-fill-current"
+                style={{ width: `${currentPct}%`, background: fillColor }}
+              />
+            </div>
+
+            {s.category && (
+              <span style={{ fontSize: 11, color: 'var(--text3)' }}>{s.category}</span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
