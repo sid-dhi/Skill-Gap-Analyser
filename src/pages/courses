@@ -1,0 +1,98 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { BookOpen } from 'lucide-react';
+import CourseCard from '../components/CourseCard';
+import { PROFESSIONS, COURSES } from '../data/professions';
+import { computeGaps } from '../utils/gapUtils';
+
+const ALL_FILTER = 'All';
+const GAP_FILTER = 'Priority (High Gap)';
+
+export default function Courses({ assessment, courseProgress, onUpdateProgress }) {
+  const [filter, setFilter] = useState(ALL_FILTER);
+
+  const profession = PROFESSIONS.find(p => p.id === assessment?.profession_id);
+
+  if (!profession) {
+    return (
+      <div className="page">
+        <div className="page-header">
+          <h2>Course Recommendations</h2>
+        </div>
+        <div className="empty-state">
+          <BookOpen />
+          <h3>No profession selected</h3>
+          <p>Complete your assessment first to see personalised course recommendations.</p>
+          <Link to="/assessment" className="btn btn-primary" style={{ marginTop: 16 }}>
+            Start Assessment
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const courseIds = profession.recommended_courses || [];
+  const allCourses = courseIds.map(id => COURSES[id]).filter(Boolean);
+
+  // Build gap map
+  const gaps = computeGaps(assessment?.skills || []);
+  const gapMap = Object.fromEntries(gaps.map(g => [g.skill_name, g.gap]));
+
+  // Categories for filter chips
+  const skills = [...new Set(allCourses.map(c => c.skill_covered))];
+  const filters = [ALL_FILTER, GAP_FILTER, ...skills];
+
+  const visibleCourses = allCourses.filter(c => {
+    if (filter === ALL_FILTER)   return true;
+    if (filter === GAP_FILTER)   return (gapMap[c.skill_covered] || 0) >= 3;
+    return c.skill_covered === filter;
+  });
+
+  // Sort: high-gap first
+  const sorted = [...visibleCourses].sort((a, b) => {
+    const ga = gapMap[a.skill_covered] || 0;
+    const gb = gapMap[b.skill_covered] || 0;
+    return gb - ga;
+  });
+
+  return (
+    <div className="page">
+      <div className="page-header">
+        <h2>{profession.icon} Recommended Courses</h2>
+        <p>Curated courses for <strong>{profession.title}</strong> — sorted by your biggest gaps</p>
+      </div>
+
+      <div className="filter-bar">
+        {filters.map(f => (
+          <button
+            key={f}
+            className={`filter-chip${filter === f ? ' active' : ''}`}
+            onClick={() => setFilter(f)}
+          >
+            {f === GAP_FILTER && '🔥 '}
+            {f}
+          </button>
+        ))}
+      </div>
+
+      {sorted.length === 0 ? (
+        <div className="empty-state" style={{ paddingTop: 40 }}>
+          <BookOpen />
+          <h3>No courses match this filter</h3>
+          <p>Try a different filter or check back after updating your assessment.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: 16 }}>
+          {sorted.map(course => (
+            <CourseCard
+              key={course.id}
+              course={course}
+              progress={courseProgress[course.id] || {}}
+              onUpdateProgress={(id, update) => onUpdateProgress(id, update)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
