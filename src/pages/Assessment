@@ -1,0 +1,165 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CheckCircle, ChevronRight } from 'lucide-react';
+import { PROFESSIONS } from '../data/professions';
+
+export default function Assessment({ assessment, onSave }) {
+  const navigate = useNavigate();
+  const [step, setStep] = useState(assessment?.profession_id ? 2 : 1);
+  const [selectedProfId, setSelectedProfId] = useState(assessment?.profession_id || null);
+  const [ratings, setRatings] = useState(() => {
+    if (assessment?.skills?.length) {
+      return Object.fromEntries(assessment.skills.map(s => [s.skill_name, s.current_level || 0]));
+    }
+    return {};
+  });
+
+  const profession = PROFESSIONS.find(p => p.id === selectedProfId);
+
+  function handleSelectProfession(id) {
+    setSelectedProfId(id);
+    // Reset ratings if profession changed
+    if (id !== selectedProfId) {
+      const prof = PROFESSIONS.find(p => p.id === id);
+      const defaults = Object.fromEntries((prof?.required_skills || []).map(s => [s.skill_name, ratings[s.skill_name] ?? 0]));
+      setRatings(defaults);
+    }
+  }
+
+  function handleSave() {
+    if (!profession) return;
+    const skills = profession.required_skills.map(s => ({
+      skill_name:    s.skill_name,
+      target_level:  s.target_level,
+      category:      s.category,
+      current_level: ratings[s.skill_name] ?? 0,
+    }));
+    onSave({
+      profession_id:    profession.id,
+      profession_title: profession.title,
+      skills,
+    });
+    navigate('/');
+  }
+
+  return (
+    <div className="page">
+      <div className="page-header">
+        <h2>Skill Assessment</h2>
+        <p>Select your target role and rate your current skill levels honestly.</p>
+      </div>
+
+      {/* Steps */}
+      <div className="steps">
+        <div className={`step ${step >= 1 ? (step > 1 ? 'done' : 'active') : ''}`}>
+          <div className="step-num">{step > 1 ? '✓' : '1'}</div>
+          <div className="step-label">Choose Profession</div>
+        </div>
+        <div className="step-line" />
+        <div className={`step ${step >= 2 ? 'active' : ''}`}>
+          <div className="step-num">2</div>
+          <div className="step-label">Rate Your Skills</div>
+        </div>
+      </div>
+
+      {/* Step 1 – Profession */}
+      {step === 1 && (
+        <>
+          <div className="section-title">Choose Your Target Profession</div>
+          <div className="grid-3" style={{ marginBottom: 32 }}>
+            {PROFESSIONS.map(p => (
+              <div
+                key={p.id}
+                className={`profession-card${selectedProfId === p.id ? ' selected' : ''}`}
+                onClick={() => handleSelectProfession(p.id)}
+              >
+                {selectedProfId === p.id && (
+                  <CheckCircle
+                    size={18}
+                    style={{ position: 'absolute', top: 12, right: 12, color: 'var(--accent)' }}
+                  />
+                )}
+                <span className="profession-icon">{p.icon}</span>
+                <div className="profession-title">{p.title}</div>
+                <div className="profession-desc">{p.description}</div>
+                <div style={{ marginTop: 10, fontSize: 11, color: 'var(--text3)' }}>
+                  {p.required_skills.length} skills required
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button
+            className="btn btn-primary"
+            disabled={!selectedProfId}
+            onClick={() => setStep(2)}
+            style={{ opacity: selectedProfId ? 1 : 0.4 }}
+          >
+            Continue <ChevronRight size={16} />
+          </button>
+        </>
+      )}
+
+      {/* Step 2 – Rate skills */}
+      {step === 2 && profession && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+            <div
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 12,
+                padding: '10px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+              }}
+            >
+              <span style={{ fontSize: 24 }}>{profession.icon}</span>
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>{profession.title}</span>
+            </div>
+            <button
+              className="btn btn-ghost"
+              style={{ fontSize: 13 }}
+              onClick={() => setStep(1)}
+            >
+              Change Profession
+            </button>
+          </div>
+
+          <div className="card" style={{ marginBottom: 24 }}>
+            <div className="card-title">Rate Your Current Skills</div>
+            <div className="card-sub">
+              Drag each slider to reflect your honest current level (0 = no knowledge, 10 = expert)
+            </div>
+
+            {profession.required_skills.map(s => (
+              <div key={s.skill_name} className="slider-group">
+                <div className="slider-info">
+                  <div className="slider-label">
+                    <span>{s.skill_name}</span>
+                    <span style={{ fontSize: 12, color: 'var(--text3)' }}>
+                      Target: {s.target_level}
+                    </span>
+                  </div>
+                  <div className="slider-category">{s.category}</div>
+                  <input
+                    type="range"
+                    min={0} max={10} step={1}
+                    value={ratings[s.skill_name] ?? 0}
+                    onChange={e => setRatings(r => ({ ...r, [s.skill_name]: Number(e.target.value) }))}
+                  />
+                </div>
+                <div className="slider-value">{ratings[s.skill_name] ?? 0}</div>
+              </div>
+            ))}
+          </div>
+
+          <button className="btn btn-primary" onClick={handleSave}>
+            <CheckCircle size={16} /> Save Assessment
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
