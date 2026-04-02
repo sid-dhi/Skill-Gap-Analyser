@@ -1,0 +1,41 @@
+import { NavLink } from 'react-router-dom';
+import { LayoutDashboard, ClipboardList, BookOpen, TrendingUp } from 'lucide-react';
+
+const NAV = [
+  { to: '/',           label: 'Dashboard',   Icon: LayoutDashboard },
+  { to: '/assessment', label: 'Assessment',  Icon: ClipboardList },
+  { to: '/courses',    label: 'Courses',     Icon: BookOpen },
+  { to: '/progress',   label: 'Progress',    Icon: TrendingUp },
+];
+
+export default function Sidebar({ professionTitle }) {
+  return (
+    <aside className="sidebar">
+      <div className="sidebar-logo">
+        <h1>SkillGap<br />Analyser</h1>
+        <span>Career Intelligence</span>
+      </div>
+
+      <nav className="sidebar-nav">
+        {NAV.map(({ to, label, Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === '/'}
+            className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+          >
+            <Icon />
+            {label}
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="sidebar-footer">
+        <div className="profession-badge">
+          <div className="label">Target Role</div>
+          <div className="value">{professionTitle || 'Not selected'}</div>
+        </div>
+      </div>
+    </aside>
+  );
+}
