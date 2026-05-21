@@ -129,11 +129,6 @@ npm run preview
 | `/courses` | Course recommendations with progress controls |
 | `/progress` | Full progress tracker with stats |
 
----
-
-## 🤝 Contributing
-
-Pull requests welcome! For major changes, open an issue first.
 
 ---
 
