@@ -16,38 +16,7 @@ A fully functional, client-side React application that helps students identify s
 - **Persistent State** — All data saved to `localStorage`; your progress survives page refreshes
 - **Responsive UI** — Works on desktop and mobile
 
----
 
-## 🗂 Project Structure
-
-```
-skill-gap-analyser/
-├── public/
-│   └── vite.svg
-├── src/
-│   ├── components/
-│   │   ├── Navbar.jsx
-│   │   ├── SkillRadarChart.jsx
-│   │   ├── SkillBarChart.jsx
-│   │   ├── CourseCard.jsx
-│   │   └── ProgressBar.jsx
-│   ├── data/
-│   │   └── professions.js       ← All static profession + course data
-│   ├── hooks/
-│   │   └── useLocalStorage.js
-│   ├── pages/
-│   │   ├── Dashboard.jsx
-│   │   ├── Assessment.jsx
-│   │   ├── Courses.jsx
-│   │   └── Progress.jsx
-│   ├── utils/
-│   │   └── gapUtils.js
-│   ├── App.jsx
-│   └── index.css
-├── index.html
-├── package.json
-├── vite.config.js
-└── README.md
 ```
 
 ---
@@ -93,15 +62,7 @@ npm run preview
 
 ---
 
-## 🛠 Tech Stack
 
-| Tool | Purpose |
-|------|---------|
-| React 18 | UI framework |
-| Vite 5 | Build tool |
-| Recharts | Radar & bar charts |
-| Lucide React | Icons |
-| localStorage | Client-side persistence |
 
 ---
 
