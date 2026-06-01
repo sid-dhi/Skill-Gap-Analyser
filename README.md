@@ -3,8 +3,7 @@
 
 A fully functional, client-side React application that helps students identify skill gaps, track learning progress, and receive personalised course recommendations based on their target profession.
 
-![Skill Gap Analyser](https://img.shields.io/badge/React-18-61DAFB?logo=react) ![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite) ![License](https://img.shields.io/badge/license-MIT-green)
-
+![Skill Gap Analyser](https://img.shields.io/badge/React-18-61DAFB?logo=react) 
 ---
 
 ## ✨ Features
